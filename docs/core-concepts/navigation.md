@@ -9,6 +9,141 @@ environment: nativescript
 
 # Architecture and Navigation
 
+## Application Bootstrap
+
+Each application must have a single entry point. The entry point for a NativeScript application is declared in the `/app/package.json` file under the `main` property. By default this is set as `app.js` meaning that this file bootstraps the app. To start your app, you need to pass a `NavigationEntry` with the desired `moduleName` to the `run` method. NativeScript looks for an XML file with the specified name, parses it and sets it as the root of your application. Afterwards, if NativeScript finds a `JS` or a `TS` file with the same name, it executes the business logic in the file.
+
+> **Important:** Calling the `run` method more than once in your application will result in an exception.
+
+In the example below, the application root is `app-root.xml`. The `app-root.xml` is using a navigation `Frame` element and via its `defaultPage` property is navigating by default to `home/home-page.xml`.
+``` JavaScript
+// app.js
+const application = require("application");
+application.run({ moduleName: "app-root" });
+```
+``` TypeScript
+// app.ts
+import * as application from "application";
+application.run({ moduleName: "app-root" });
+```
+```XML
+<!-- app-root.xml -->
+<Frame defaultPage="home/home-page" />
+```
+```XML
+<!-- home/home-page.xml -->
+<Page class="page">
+    <StackLayout>
+        <!-- content here-->
+        <Label text="Hooray! Home Page loaded!"/>
+    </StackLayout>
+</Page>
+```
+
+Alternatively, ... TODO: Document the use of a create function with application.run();
+
+> **Important:** Before NativeScript 4.x.x the `start` method automatically created an underlying root `Frame` instance and wrapped your page. The new `run` method will set up the root element of the provided module as application root element. This effectively means that apart from `Frame` you can now have other roots of your app like `TabView` and `RadSideDrawer`. The `start` method is now marked as deprecated.
+
+Example for `TabView` as root in `app-root.xml`.
+```XML
+<!-- app-root.xml -->
+<TabView androidTabsPosition="bottom">
+    <TabViewItem title="First">
+        <Frame defaultPage="home/home-page" />
+    </TabViewItem>
+    <TabViewItem title="Second">
+        <Frame defaultPage="second/second-page" />
+    </TabViewItem>
+</TabView>
+```
+
+Example for `GridLayout` as root in `app-root.xml`.
+```XML
+<!-- app-root.xml -->
+<GridLayout rows="*, 2*">
+    <StackLayout row="0" backgroundColor="green">
+        <!-- Static content goes here -->
+    <StackLayout/>
+    <StackLayout row="1">
+        <Frame defaultPage="home/home-page"/>
+    </StackLayout>
+</GridLayout>
+```
+
+## Navigation
+
+Navigation refers to the action of moving around the screens of your app. Each mobile application has its own distinct navigation schema based on the architecture of the information it tries to present. Here is a common mobile app navigation schema:
+
+TODO: Add schema
+
+Based on the schema above, there are three distinct navigational directions a user can move in:
+* Forward - refers to navigating to a screen on the next level in the hierarchy.
+* Backward - refers to navigating back to a screen either on the previous level in the hierarchy or chronologically.
+* Lateral - refers to navigating between screens on the same level in the hierarchy.
+
+Below we will explain and demonstrate how you can implement these three navigational directions in NativeScript.
+
+## Forward Navigation
+
+### Page
+
+### Frame
+
+## Backward Navigation
+
+### Hierarchical
+
+### Chronological
+
+## Lateral Navigation
+
+TODO: Add schema with highlighted lateral navigation
+
+Navigating between screens at the same level of hierarchy is enabled through specific navigation widgets and components. These include `TabView`, `SideDrawer` and `Modal View`, each providing a unique mobile navigation pattern.
+
+### Modal View
+
+Opening a `Modal View` is the simplest way to implement lateral navigation. Unlike the `TabView` lateral navigations, the `Modal View` state isn't kept when navigating away, i.e. closing the modal. Out of the box, a `Modal View` has a single view. You can enable forward/backward navigation by embedding a navigation `Frame` in it. To open a `Modal View` you should simply call the `showModal` method of any widget instance with a path to the modal root file as parameter. Take a look at the [TabView]({%slug tab-view %}) article for more information.
+
+TODO: Add Modal View Example
+
+### TabView Navigation
+
+The `TabView` widget enables the user to arbitrarily navigate between several views at the same level. A key feature of this widget is that it keeps the state of the views that are not visible. This means that when the user comes back to a previous tab, the data, scroll position and navigation state should be like they left them. Out of the box, each tab has a single view. You can enable forward/backward navigation in a tab by embedding a navigation `Frame` in it. Check out the [TabView]({%slug tab-view %}) article for a more detailed look on how you can use and customize the widget.
+
+```XML
+<TabView androidTabsPosition="bottom">
+    <TabViewItem title="First">
+        <!-- view content -->
+    </TabViewItem>
+    <TabViewItem title="Second">
+        <!-- view content -->
+    </TabViewItem>
+</TabView>
+```
+
+### SideDrawer Navigation
+
+The `SideDrawer` widget is part of the [Professional UI Components]({%slug rich-components %}) suite. It enables the user to open a hidden view containing navigation controls or settings from the sides of the screen. The widget doesn't provide navigation logic itself like the `TabView`, instead it lets you customize the contents of the drawer. A typical usage would be to add UI controls like a `Button` and have them do one of two things:
+
+* Forward navigation - get a reference to a navigation `Frame` and execute a navigation in it.
+* Lateral navigation - open a `Modal View`.
+
+```XML
+<nsDrawer:RadSideDrawer xmlns:nsDrawer="nativescript-ui-sidedrawer">
+    <nsDrawer:RadSideDrawer.drawerContent>
+        <!-- drawer content, i.e. the hidden view -->
+    </nsDrawer:RadSideDrawer.drawerContent>
+
+    <nsDrawer:RadSideDrawer.mainContent>
+        <!-- main content, i.e. what is dislpayed on the screen -->
+    </nsDrawer:RadSideDrawer.mainContent>
+</nsDrawer:RadSideDrawer>
+```
+
+Take a look at the [SideDrawer](https://docs.telerik.com/devtools/nativescript-ui/Controls/NativeScript/SideDrawer/overview) docs for more information about the widget.
+
+======================================================================================================================================================
 
 ## Page management
 
@@ -94,7 +229,7 @@ export function createPage(): Page {
 }
 ```
 
-### Set home page
+<!-- ### Set home page
 
 Each application must have a single entry point. To load the entry point for your app, you need to pass `NavigationEntry` with the desired `moduleName` to the `run` method.  NativeScript looks for an XML file with the specified name, parses it and draws the UI described in the file. Afterward, if NativeScript finds a `JS` or a `TS` file with the same name, it executes the business logic in the file.
 
@@ -150,7 +285,7 @@ Example for `GridLayout` as root in `app-root.xml`.
         <Frame defaultPage="home/home-page"/>
     </StackLayout>
 </GridLayout>
-```
+``` -->
 
 ## Navigation
 

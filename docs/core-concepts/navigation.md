@@ -70,9 +70,17 @@ Example for `GridLayout` as root in `app-root.xml`.
 </GridLayout>
 ```
 
+
+
+
+
+
+
+
+
 ## Navigation
 
-Navigation refers to the action of moving around the screens of your app. Each mobile application has its own distinct navigation schema based on the architecture of the information it tries to present. Here is a common mobile app navigation schema:
+Navigation refers to the act of moving around the screens of your application. Each mobile application has its own unique navigation schema based on the information architecture it tries to present. Here is a common mobile app navigation schema:
 
 TODO: Add schema
 
@@ -81,13 +89,84 @@ Based on the schema above, there are three distinct navigational directions a us
 * Backward - refers to navigating back to a screen either on the previous level in the hierarchy or chronologically.
 * Lateral - refers to navigating between screens on the same level in the hierarchy.
 
-Below we will explain and demonstrate how you can implement these three navigational directions in NativeScript.
+Below we will explain and demonstrate how you can implement these three navigational directions in NativeScript and combine them to build the navigation architecture of your application.
 
 ## Forward Navigation
 
+TODO: Add schema with highlighted forward navigation
+
 ### Page
 
+The `Page` component is NativeScript's most basic navigation item. It represents a single screen that the user can navigate to. This component serves two important roles. It holds the UI components of a single screen and provides navigation lifecycle events. For complete information regarding the `Page` component API, check out the article in UI Widgets section.
+
+The most common usage of a `Page` component is as a root of a module, in which case the module becomes a page module. Here is an example of a basic page module:
+
+``` XML
+<!-- main-page.xml-->
+<Page loaded="onPageLoaded">
+    <!-- Each page can have only a single root view -->
+    <StackLayout>
+        <!-- content here -->
+        <Label text="Hello, world!"/>
+    </StackLayout>
+</Page>
+```
+``` JavaScript
+// main-page.js
+function onPageLoaded(args) {
+    console.log("Page Loaded");
+}
+exports.onPageLoaded = onPageLoaded;
+```
+``` TypeScript
+// main-page.ts
+import { EventData } from "data/observable";
+
+export function onPageLoaded(args: EventData): void {
+    console.log("Page Loaded");
+}
+```
+
 ### Frame
+
+To display a `Page` on the screen, you need to navigate to it using the `Frame` component. This component is the main provider of forward/backward hierarchical navigation in NativeScript. The `Frame` component has no visible representation. It simply provides a container for navigations between pages. It also provides a navigation API which includes history manipulation and setting custom navigation transitions. For more information on the `Frame` component API, visit the article in UI Widgets.
+
+Currently, `Frame` components can be used only in root modules. For your convenience, the component also provides a `defaultPage` property to easily specify the first page module that will be displayed in the `Frame` once it's loaded. In the following example you can see a `Frame` component that navigates by default to a home-page module. The home-page module in turn has a button that utilizes the `Frame`'s `navigate()` method to navigate to the main-page module that we defined above.
+
+```XML
+<!-- app-root.xml -->
+<Frame defaultPage="home/home-page" />
+```
+```XML
+<!-- home/home-page.xml -->
+<Page class="page">
+    <StackLayout>
+        <!-- content here-->
+        <Button text="Navigate" tap="onTap"/>
+    </StackLayout>
+</Page>
+```
+``` JavaScript
+// home/home-page.js
+function onTap(args) {
+    const button = args.object;
+    const page = button.page;
+    page.frame.navigate("main-page");
+}
+exports.onTap = onTap;
+```
+``` TypeScript
+// home/home-page.ts
+import { EventData } from "tns-core-modules/data/observable";
+import { Button } from "tns-core-modules/ui/button";
+import { Page } from "tns-core-modules/ui/page";
+
+export function onTap(args) {
+    const button: Button = args.object;
+    const page: Page = button.page;
+    page.frame.navigate("main-page");
+}
+```
 
 ## Backward Navigation
 
@@ -99,19 +178,22 @@ Below we will explain and demonstrate how you can implement these three navigati
 
 TODO: Add schema with highlighted lateral navigation
 
-Navigating between screens at the same level of hierarchy is enabled through specific navigation widgets and components. These include `TabView`, `SideDrawer` and `Modal View`, each providing a unique mobile navigation pattern.
+Implementing lateral navigation in NativeScript means to incorporate several instances of the `Frame` component in your navigation and provide means to the user to switch between them. This is enabled through specific navigation components. These include `TabView`, `SideDrawer` and `Modal View`, each providing a unique mobile navigation pattern.
 
 ### Modal View
 
-Opening a `Modal View` is the simplest way to implement lateral navigation. Unlike the `TabView` lateral navigations, the `Modal View` state isn't kept when navigating away, i.e. closing the modal. Out of the box, a `Modal View` has a single view. You can enable forward/backward navigation by embedding a navigation `Frame` in it. To open a `Modal View` you should simply call the `showModal` method of any widget instance with a path to the modal root file as parameter. Take a look at the [TabView]({%slug tab-view %}) article for more information.
+TODO: Add schema with Modal View on the side
+
+Opening a `Modal View` is the simplest way to implement lateral navigation. Unlike the `TabView` lateral navigations, the `Modal View` state isn't kept when navigating away, i.e. closing the modal. Out of the box, a `Modal View` has a single view. You can enable forward/backward navigation by embedding a navigation `Frame` in it. To open a `Modal View` you should simply call the `showModal` method of any component instance with a path to the modal root file as parameter. Take a look at the [TabView]({%slug tab-view %}) article for more information.
 
 TODO: Add Modal View Example
 
 ### TabView Navigation
 
-The `TabView` widget enables the user to arbitrarily navigate between several views at the same level. A key feature of this widget is that it keeps the state of the views that are not visible. This means that when the user comes back to a previous tab, the data, scroll position and navigation state should be like they left them. Out of the box, each tab has a single view. You can enable forward/backward navigation in a tab by embedding a navigation `Frame` in it. Check out the [TabView]({%slug tab-view %}) article for a more detailed look on how you can use and customize the widget.
+The `TabView` component enables the user to arbitrarily navigate between several views at the same level. A key feature of this component is that it keeps the state of the views that are not visible. This means that when the user comes back to a previous tab, the data, scroll position and navigation state should be like they left them. Out of the box, each tab has a single view. You can enable forward/backward navigation in a tab by embedding a navigation `Frame` in it. Check out the [TabView]({%slug tab-view %}) article for a more detailed look on how you can use and customize the component.
 
 ```XML
+<!-- app-root.xml -->
 <TabView androidTabsPosition="bottom">
     <TabViewItem title="First">
         <!-- view content -->
@@ -124,12 +206,13 @@ The `TabView` widget enables the user to arbitrarily navigate between several vi
 
 ### SideDrawer Navigation
 
-The `SideDrawer` widget is part of the [Professional UI Components]({%slug rich-components %}) suite. It enables the user to open a hidden view containing navigation controls or settings from the sides of the screen. The widget doesn't provide navigation logic itself like the `TabView`, instead it lets you customize the contents of the drawer. A typical usage would be to add UI controls like a `Button` and have them do one of two things:
+The `SideDrawer` component is part of the [Professional UI Components]({%slug rich-components %}) suite. It enables the user to open a hidden view, i.e. drawer, containing navigation controls or settings from the sides of the screen. The component itself doesn't provide navigation logic like the `TabView`. Instead, it is built with more freedom in mind and lets you customize the contents of the drawer. A typical usage would be to add UI controls like a `Button` and have them do one of two things:
 
 * Forward navigation - get a reference to a navigation `Frame` and execute a navigation in it.
 * Lateral navigation - open a `Modal View`.
 
 ```XML
+<!-- app-root.xml -->
 <nsDrawer:RadSideDrawer xmlns:nsDrawer="nativescript-ui-sidedrawer">
     <nsDrawer:RadSideDrawer.drawerContent>
         <!-- drawer content, i.e. the hidden view -->
@@ -141,21 +224,27 @@ The `SideDrawer` widget is part of the [Professional UI Components]({%slug rich-
 </nsDrawer:RadSideDrawer>
 ```
 
-Take a look at the [SideDrawer](https://docs.telerik.com/devtools/nativescript-ui/Controls/NativeScript/SideDrawer/overview) docs for more information about the widget.
+Take a look at the [SideDrawer](https://docs.telerik.com/devtools/nativescript-ui/Controls/NativeScript/SideDrawer/overview) docs for more information about the component.
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ======================================================================================================================================================
 
-## Page management
 
-NativeScript applications consist of pages that represent the separate application screens.
+### Define Page
 
-Pages are instances of the `Page` class of the `tns-core-modules/ui/page` module. To navigate between pages, you can use the methods of the `Frame` class and the related methods of the `tns-core-modules/ui/frame` module.
-
-> **TIP:** Instead of multiple pages, you can have a single page with a [tab view](http://docs.nativescript.org/api-reference/classes/_ui_tab_view_.tabview.html) and different user interfaces for each tab.
-
-### Define page
-
-Pages represent the separate screens of your application. Each page is an instance of the [`page`](http://docs.nativescript.org/api-reference/classes/_ui_page_.page.html) class of the [`Page`](http://docs.nativescript.org/api-reference/classes/_ui_page_.page.html) module. Each class instance inherits the [`content`](http://docs.nativescript.org/api-reference/classes/_ui_content_view_.contentview.html) property which holds the root visual element of the UI.
+Each page is an instance of the [`Page`](http://docs.nativescript.org/api-reference/classes/_ui_page_.page.html) class of the [`tns-core-modules/ui/page`](https://docs.nativescript.org/api-reference/modules/_ui_page_) module. Each class instance inherits the [`content`](http://docs.nativescript.org/api-reference/classes/_ui_content_view_.contentview.html) property which holds the root visual element of the UI.
 
 NativeScript provides two approaches to instantiating your pages.
 
@@ -189,6 +278,51 @@ export function onPageLoaded(args: EventData): void {
     console.log("Page Loaded");
 }
 ```
+
+## Page management
+
+NativeScript applications consist of pages that represent the separate application screens.
+
+Pages are instances of the `Page` class of the `tns-core-modules/ui/page` module. To navigate between pages, you can use the methods of the `Frame` class and the related methods of the `tns-core-modules/ui/frame` module.
+
+> **TIP:** Instead of multiple pages, you can have a single page with a [tab view](http://docs.nativescript.org/api-reference/classes/_ui_tab_view_.tabview.html) and different user interfaces for each tab.
+
+<!-- ### Define page
+
+Pages represent the separate screens of your application. Each page is an instance of the [`page`](http://docs.nativescript.org/api-reference/classes/_ui_page_.page.html) class of the [`Page`](http://docs.nativescript.org/api-reference/classes/_ui_page_.page.html) module. Each class instance inherits the [`content`](http://docs.nativescript.org/api-reference/classes/_ui_content_view_.contentview.html) property which holds the root visual element of the UI.
+
+NativeScript provides two approaches to instantiating your pages. -->
+
+<!-- #### Create a page in XML
+
+You can define the UI declaration and the code for the page separately.
+
+To apply this approach, create an `XML` file for each page to hold the layout of the page. Thus your code will be in a `JS` or a `TS` file. The names of the `XML` and the `JS` or `TS` file must match.
+``` XML
+<!-- main-page.xml-->
+<Page loaded="onPageLoaded">
+    <!-- Each page can have only a single root view -->
+    <StackLayout>
+        <!-- content here -->
+        <Label text="Hello, world!"/>
+    </StackLayout>
+</Page>
+```
+``` JavaScript
+// main-page.js
+function onPageLoaded(args) {
+    console.log("Page Loaded");
+}
+exports.onPageLoaded = onPageLoaded;
+```
+``` TypeScript
+// main-page.ts
+import { EventData } from "data/observable";
+
+export function onPageLoaded(args: EventData): void {
+    console.log("Page Loaded");
+}
+``` -->
 
 #### Create a page in code
 
